@@ -22,4 +22,6 @@ BASE_URL = os.getenv("BASE_URL")
 
 3. Compute Embeddings
 
-4. Test System
+4. Create Recommendation System
+
+5. Test System + Create Interface
