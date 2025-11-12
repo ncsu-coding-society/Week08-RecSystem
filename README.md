@@ -1,6 +1,7 @@
 # Week08-RecSystem
 
-0. Pre-Setup
+**0. Pre-Setup**
+
 Before coding, clone this repository and create a branch with your name (mine would be called 'preeti'). Push this branch to origin before starting to code. You can work in app.py and commit + push all your changes to your branch - don't merge with main!
 
 
@@ -27,7 +28,7 @@ git branch -d {name}
 git push origin –delete {name}
 ```
 
-1. Setup
+**1. Setup**
 
 Install Dependencies:
 ```
@@ -45,10 +46,10 @@ API_KEY = os.getenv("API_KEY")
 BASE_URL = os.getenv("BASE_URL")
 ```
 
-2. Ingest Data
+**2. Ingest Data**
 
-3. Compute Embeddings
+**3. Compute Embeddings**
 
-4. Create Recommendation System
+**4. Create Recommendation System**
 
-5. Test System + Create Interface
+**5. Test System + Create Interface**
