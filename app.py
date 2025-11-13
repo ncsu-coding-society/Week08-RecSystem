@@ -56,13 +56,77 @@ def get_movie_genres(movie_id):
 movies_df = get_recent_movies()
 movies_df["genres"] = movies_df["id"].apply(get_movie_genres)
 movies_df["content"] = (
-    movies_df["description"]+ " Genres: " + movies_df["genres"]
+movies_df["description"]+ " Genres: " + movies_df["genres"]
 )
 
 # load model and tokenizer
 
+tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
+model = AutoModel.from_pretrained("bert-base-cased")
+
 # embed dataset
+
+def get_embedding(text):
+    with torch.no_grad():
+        inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=128)
+        outputs = model(**inputs)
+        embedding = outputs.last_hidden_state.mean(dim=1)
+    return embedding.squeeze().numpy()
+
+movies_df["embedding"] = movies_df["content"].apply(get_embedding)
+print(movies_df["embedding"])
 
 # fetch recommendations
 
+def recMovieFromTitle(title, num=5):
+    matches = movies_df[movies_df["title"]==title]
+    if matches.empty:
+        print(f"\nMovie '{title}' not found in the dataset.")
+        print("Available movies:")
+        for i, movie_title in enumerate(movies_df["title"].head(10), 1):
+            print(f"  {i}. {movie_title}")
+        return
+
+    idx = matches.index[0]
+    query_vec = movies_df.loc[idx, "embedding"].reshape(1, -1)
+    all_vecs = np.stack(movies_df["embedding"].to_numpy())
+
+    #compute cos similarity
+    similarities = cosine_similarity(query_vec, all_vecs).flatten()
+    movies_df["similarity"] = similarities
+
+    top = movies_df.sort_values("similarity", ascending=False).iloc[1:num+1]
+
+    print(f"\nMovies similar to '{title}':\n")
+    for _,row in top.iterrows():
+        print(f"- {row['title']} (similarity: {row['similarity']:.4f}) \n{row['description']}\n")
+
+def recMovieFromDescription(description, num=5):
+    matches = movies_df[movies_df["description"]==description]
+    if matches.empty:
+        print(f"\nExact description not found in the dataset.")
+        return
+
+    idx = matches.index[0]
+    query_vec = movies_df.loc[idx, "embedding"].reshape(1, -1)
+    all_vecs = np.stack(movies_df["embedding"].to_numpy())
+
+    #compute cos similarity
+    similarities = cosine_similarity(query_vec, all_vecs).flatten()
+    movies_df["similarity"] = similarities
+
+    top = movies_df.sort_values("similarity", ascending=False).iloc[1:num+1]
+
+    print(f"\nMovies similar to the description:\n")
+    for _,row in top.iterrows():
+        print(f"- {row['title']} (similarity: {row['similarity']:.4f}) \n{row['description']}\n")
+
 # testings / interface
+
+#for i in range(10):
+#    movie = input("Enter movie title: ")
+#    recMovieFromTitle(movie)
+
+for i in range(10):
+    movie = input("Enter movie descr: ")
+    recMovieFromDescription(movie)
