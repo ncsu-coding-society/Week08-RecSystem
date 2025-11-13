@@ -20,7 +20,7 @@ def get_recent_movies():
     start_year = 2015
     movies = []
 
-    for page in range(1, 11):
+    for page in range(1, 20):
         url = (
             f"{BASE_URL}/discover/movie"
             f"?api_key={API_KEY}"
@@ -78,7 +78,7 @@ print(movies_df["embedding"])
 
 # fetch recommendations
 
-def recMovieFromTitle(title, num=5):
+def recMovieFromTitle(title, num=10):
     matches = movies_df[movies_df["title"]==title]
     if matches.empty:
         print(f"\nMovie '{title}' not found in the dataset.")
@@ -101,7 +101,7 @@ def recMovieFromTitle(title, num=5):
     for _,row in top.iterrows():
         print(f"- {row['title']} (similarity: {row['similarity']:.4f}) \n{row['description']}\n")
 
-def recMovieFromDescription(description, num=5):
+def recMovieFromDescription(description, num=10):
     matches = movies_df[movies_df["description"]==description]
     if matches.empty:
         print(f"\nExact description not found in the dataset.")
@@ -123,10 +123,10 @@ def recMovieFromDescription(description, num=5):
 
 # testings / interface
 
-#for i in range(10):
-#    movie = input("Enter movie title: ")
-#    recMovieFromTitle(movie)
-
 for i in range(10):
-    movie = input("Enter movie descr: ")
-    recMovieFromDescription(movie)
+    movie = input("Enter movie title: ")
+    recMovieFromTitle(movie)
+
+#for i in range(10):
+    #movie = input("Enter movie descr: ")
+    #recMovieFromDescription(movie)
