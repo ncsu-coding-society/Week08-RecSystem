@@ -60,9 +60,42 @@ movies_df["content"] = (
 )
 
 # load model and tokenizer
+tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+model = AutoModel.from_pretrained("bert-base-uncased")
 
 # embed dataset
+def get_embedding(text):
+    with torch.no_grad():
+        inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=128)
+        outputs = model(**inputs)
+        embedding = outputs.last_hidden_state.mean(dim=1)
+
+    return embedding.squeeze().numpy()
+
+movies_df["embedding"] = movies_df["content"].apply(get_embedding)
+print(movies_df["embedding"])
 
 # fetch recommendations
 
+def rec_movie_from_dataset(movie, num=5):
+
+    query_vec = get_embedding(movie).reshape(1, -1)
+    all_vecs = np.vstack(movies_df["embedding"].to_numpy())
+
+    #compute cosine similarity
+    similarities = cosine_similarity(query_vec, all_vecs).flatten()
+    movies_df["similarity"] = similarities
+
+    #sort by popularity
+    top = movies_df.sort_values(by="similarity", ascending=False).iloc[1:num+1]
+    print(f"\nMovies similar to '{title}':\n")
+    for _, row in top.iterrows():
+        print(f"- {row['title']} (Similarity: {row['similarity']}) \n{row['description']}\n")
+
+
+
+
 # testings / interface
+for i in range(10):
+    movie = input("Enter movie description:")
+    rec_movie_from_dataset(movie)
